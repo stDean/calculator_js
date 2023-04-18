@@ -19,8 +19,8 @@ for (let key of keys) {
         display_input.innerHTML = cleanInput(input);
         break;
       case "=":
-        let result = eval(input);
-        display_output.innerHTML = result;
+        let result = eval(prepareInput(input));
+        display_output.innerHTML = cleanOutput(result);
         break;
       case "bracket":
         /**
@@ -40,8 +40,10 @@ for (let key of keys) {
         display_input.innerHTML = cleanInput(input);
         break;
       default:
-        input += value;
-        display_input.innerHTML = cleanInput(input);
+        if (validateInput(value)) {
+          input += value;
+          display_input.innerHTML = cleanInput(input);
+        }
         break
     }
   })
@@ -72,4 +74,63 @@ function cleanInput(input) {
   })
 
   return formattedArray.join("");
+}
+
+/**
+ *  first convert the output val to a string
+ *  convert the string into an array, the get the value before the decimal and after the decimal,
+ *  if the length of the element in d array is > 3, add a comma,
+ *  if there is a decimal add it!
+ */
+function cleanOutput(output) {
+  let outputStr = output.toString();
+  let decimal = outputStr.split(".")[1];
+  outputStr = outputStr.split(".")[0];
+
+  let outputArr = outputStr.split("");
+  if (outputArr.length > 3) {
+    for (let i = outputArr.length - 3; i > 0; i -= 3) {
+      outputArr.splice(i, 0, ",")
+    }
+  }
+
+  if (decimal) {
+    outputArr.push(".");
+    outputArr.push(decimal);
+  }
+
+  return outputArr.join("");
+}
+
+// this function makes sure the input entered is valid i.e you cannot have multiple operators as last value of the input
+function validateInput(val) {
+  let lastInput = input.slice(-1);
+  let operator = ["+", "-", "/", "*"];
+
+  if (val === "." && lastInput === ".") {
+    return false
+  }
+
+  if (operator.includes(val)) {
+    if (operator.includes(lastInput)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  return true
+}
+
+// 
+function prepareInput(input) {
+  let inputArray = input.split("");
+
+  for (let i = 0; i < inputArray.length; i++) {
+    if (inputArray[i] == "%") {
+      inputArray[i] = "/100";
+    }
+  }
+
+  return inputArray.join("");
 }
